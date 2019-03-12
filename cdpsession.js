@@ -7,12 +7,12 @@ const puppeteer = require('puppeteer');
 
   // Create a raw DevTools protocol session to talk to the page.
   // Use CDP to set the animation playback rate.
-  const client = await page.target().createCDPSession();
-  await client.send('Animation.enable');
-  client.on('Animation.animationCreated', () => {
+  const session = await page.target().createCDPSession();
+  await session.send('Animation.enable');
+  session.on('Animation.animationCreated', () => {
     console.log('Animation created!');
   });
-  await client.send('Animation.setPlaybackRate', {
+  await session.send('Animation.setPlaybackRate', {
     playbackRate: 2,
   });
 

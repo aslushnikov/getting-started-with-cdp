@@ -1,5 +1,10 @@
 # Using Chrome DevTools Protocol
 
+> **Think twice before using CDP directly. You'll be better off with [Puppeteer](https://github.com/GoogleChrome/puppeteer)**
+
+> Not convinced? At least use [Puppeteer's CDPSession](https://github.com/aslushnikov/getting-started-with-cdp#using-puppeteers-cdpsession).
+
+
 ## Intro
 
 > **NOTE**: An interactive protocol viewer is available at https://vanilla.aslushnikov.com.
@@ -17,7 +22,7 @@ npm i
 
 ## Protocol Fundamentals
 
-When Chromium is started with a `--remote-debugging-port=0` flag, it starts a Chrome DevTools Protocol server and prints its WebSocket URL to STDOUT. The output looks something like this:
+When Chromium is started with a `--remote-debugging-port=0` flag, it starts a Chrome DevTools Protocol server and prints its WebSocket URL to STDERR. The output looks something like this:
 
 ```bash
 DevTools listening on ws://127.0.0.1:36775/devtools/browser/a292f96c-7332-4ce8-82a9-7411f3bd280a
@@ -96,6 +101,9 @@ module.exports = function SEND(ws, command) {
 ```
 <!-- gen:stop -->
 
+> **NOTE**: this `SEND` implementation is very inefficient - don't use it as-is! Check out Puppeteer's [Connection.js](https://github.com/GoogleChrome/puppeteer/blob/master/lib/Connection.js) for a
+> better version.
+
 ## Targets & Sessions
 
 Chrome DevTools protocol has APIs to interact with many different parts of the browser - such as pages, serviceworkers and extensions. These parts are called *Targets* and can be fetched/tracked using [Target domain](https://vanilla.aslushnikov.com/#Target).
@@ -158,7 +166,7 @@ Things to notice:
 
 Some commands set state which is stored per session, e.g. `Runtime.enable` and `Targets.setDiscoverTargets`. Each session is initialized with a set of *domains*, the exact set depends on the attached target and can be [found somewhere in the Chromium source](https://cs.chromium.org/search/?q=%22session-%3EAddHandler%22+f:devtools&type=cs). For example, sessions connected to a browser don't have a "Page" domain, but sessions connected to pages do.
 
-We call sessions attached to a Browser target *browser sessions*. Similarly, there are *page sessions*, *worker sessions* and so on.
+We call sessions attached to a Browser target *browser sessions*. Similarly, there are *page sessions*, *worker sessions* and so on. In fact, the WebSocket connection is an implicitly created browser session.
 
 ## Session Hierarchy
 
@@ -167,22 +175,6 @@ This session is the one that receives commands if there's no `sessionId` specifi
 
 The page session is created from inside the browser session and thus is a **child** of the browser session. When a parent session closes, e.g. via [`Target.detachFromTarget`](https://vanilla.aslushnikov.com/#Target.detachFromTarget), all of its child sessions are closed as well.
 
-
-## Target Hierarchy & Session Auto-Attaching
-
-As of March 2019, DevTools Protocol arranges targets in a hierarchy:
-- The Browser session's Target domain manages the top-level targets: Pages, Browser, ServiceWorkers, SharedWorkers
-- The Page/OOPIFs session's Target domain manages the subtargets: Workers, ServiceWorkers and [OOPIFs](https://www.chromium.org/developers/design-documents/oop-iframes)
-- The Worker session's Target domain manages the nested Workers.
-
-Currently the only way to attach to the sub-targets of a page is by calling [`Target.setAutoAttach`](https://vanilla.aslushnikov.com/#Target.setAutoAttach). This will result in a sequence of [`Target.attachedToTarget`](https://vanilla.aslushnikov.com/#Target.attachedToTarget) events that report child `sessionId`s.
-
-Auto-attaching to the Page's subtargets serves multiple purposes:
-- That's the only way to discover DedicatedWorkers
-- That's the only way to discover OOPIFs
-- That's the only way to figure out if a ServiceWorker relates to the Page
-
-> **NOTE**: There are plans to flatten targets, exposing Workers and OOPIFs on the Browser session target domain and introducing a designated api to describe ServiceWorker<->Page relationship.
 
 ## Stable vs Experimental methods
 
@@ -195,10 +187,7 @@ As history has shown, experimental APIs *do* change quite often. If possible, st
 
 > **NOTE**: The Chrome DevTools team maintains [Puppeteer](https://github.com/GoogleChrome/puppeteer) as a reliable high-level API to control a browser. Internally, Puppeteer *does* use experimental CDP methods, but the team makes sure to update the library as the underlying protocol changes.
 
-[Vanilla protocol viewer](https://vanilla.aslushnikov.com/) aggressively highlights experimental bits with red background:
-
-![image](https://user-images.githubusercontent.com/746130/54233660-9ecf9e80-44ca-11e9-9049-1e80c1ccc0a3.png)
-
+[Vanilla protocol viewer](https://vanilla.aslushnikov.com/) aggressively highlights experimental bits with red background.
 
 ## Using Puppeteer's [CDPSession](https://pptr.dev/#?product=Puppeteer&version=v1.13.0&show=api-class-cdpsession)
 
@@ -217,12 +206,12 @@ const puppeteer = require('puppeteer');
 
   // Create a raw DevTools protocol session to talk to the page.
   // Use CDP to set the animation playback rate.
-  const client = await page.target().createCDPSession();
-  await client.send('Animation.enable');
-  client.on('Animation.animationCreated', () => {
+  const session = await page.target().createCDPSession();
+  await session.send('Animation.enable');
+  session.on('Animation.animationCreated', () => {
     console.log('Animation created!');
   });
-  await client.send('Animation.setPlaybackRate', {
+  await session.send('Animation.setPlaybackRate', {
     playbackRate: 2,
   });
 
