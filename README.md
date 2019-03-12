@@ -191,9 +191,11 @@ Auto-attaching to page's subtargets serves multiple purposes:
 Chrome DevTools protocol has "stable" and "experimental" parts. Events, methods, and sometimes whole domains
 might be marked as "experimental". DevTools team doesn't commit to maintaining experimental APIs and is free to change/remove them at any moment.
 
-**Use experimental APIs at your own risk!** 
+**!!! USE EXPERIMENTAL APIs AT YOUR OWN RISK !!!**
 
-> NOTE: DevTools team maintains [Puppeteer](https://github.com/GoogleChrome/puppeteer) as a reliable high-level API to control browser. Internally, Puppeteer *does* use experimental CDP methods, but the team makes sure to update the library once the underlying protocol changes.
+As history has shown, experimental APIs *do* change quite often. If possible, stick to stable protocol or [Puppeteer](https://github.com/GoogleChrome/puppeteer).
+
+> **NOTE**: DevTools team maintains [Puppeteer](https://github.com/GoogleChrome/puppeteer) as a reliable high-level API to control browser. Internally, Puppeteer *does* use experimental CDP methods, but the team makes sure to update the library once the underlying protocol changes.
 
 Interactive Protocol viewers mark "experimental" bits, e.g. [vanilla protocol viewer](https://vanilla.aslushnikov.com/) aggressively highlights these bits with red background:
 
