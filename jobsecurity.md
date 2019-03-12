@@ -1,5 +1,3 @@
-# Job Security
-
 ## Target Hierarchy & Session Auto-Attaching
 
 As of March 2019, DevTools Protocol arranges targets in a hierarchy:
