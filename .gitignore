@@ -1,0 +1,16 @@
+/node_modules/
+/test/output-chromium
+/test/output-firefox
+/test/test-user-data-dir*
+/.local-chromium/
+/.dev_profile*
+.DS_Store
+*.swp
+*.pyc
+.vscode
+package-lock.json
+yarn.lock
+/node6
+/lib/protocol.d.ts
+/utils/browser/puppeteer-web.js
+/index.d.ts
