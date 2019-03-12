@@ -98,7 +98,7 @@ module.exports = function SEND(ws, command) {
 
 ## Targets & Sessions
 
-Chrome DevTools protocol has APIs to interact with many different parts of the browser - such as pages, serviceworkers and extensions. These parts are called Targets and can be fetched/tracked using [Target domain](https://vanilla.aslushnikov.com/#Target).
+Chrome DevTools protocol has APIs to interact with many different parts of the browser - such as pages, serviceworkers and extensions. These parts are called *Targets* and can be fetched/tracked using [Target domain](https://vanilla.aslushnikov.com/#Target).
 
 When client wants to interact with a target using CDP, it has to first attach to the target using [Target.attachToTarget](https://vanilla.aslushnikov.com/#Target.attachToTarget) command. The command will establish a *protocol session* to the given target and return a *sessionId*.
 
@@ -156,7 +156,7 @@ Things to notice:
 2. [Line 26](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L26): the `"flatten"` flag is a preffered mode of operation; non-flatten mode will be removed eventually. Flatten mode allows us to pass `sessionId` as a part of JSONRPC message (line 32).
 3. [Line 32](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L32): include a sessionId as a part of JSONRPC message to send a message to the page.
 
-Sessions hold client state - such as pending evaluations, reported execution contexts e.t.c. Each session is initialized with a set of *domains*, the exact set of which depends on the target the session is attached to and can be [found somewhere in the Chromium source](https://cs.chromium.org/search/?q=%22session-%3EAddHandler%22+f:devtools&type=cs). For example, sessions connected to a browser don't have a "Page" domain, but pages do.
+Sessions hold client state - such as pending evaluations, reported execution contexts e.t.c. Each session is initialized with a set of *domains*, the exact set of which depends on the attached target and can be [found somewhere in the Chromium source](https://cs.chromium.org/search/?q=%22session-%3EAddHandler%22+f:devtools&type=cs). For example, sessions connected to a browser don't have a "Page" domain, but pages do.
 
 We call sessions attached to a Browser target as *browser sessions*. Similarly, there are *page sessions*, *worker sessions* and so on.
 
@@ -185,6 +185,20 @@ Auto-attaching to page's subtargets serves multiple purposes:
 - That's the only way to figure if SW relates to a page
 
 > **NOTE**: There are plans to flatten targets, exposing Workers and OOPIFs on browser session target domain and introducing a designated api to describe ServiceWorker<->Page relationship.
+
+## Stable vs Experimental methods
+
+Chrome DevTools protocol has "stable" and "experimental" parts. Events, methods, and sometimes whole domains
+might be marked as "experimental". DevTools team doesn't commit to maintaining experimental APIs and is free to change/remove them at any moment.
+
+**Use experimental APIs at your own risk!** 
+
+> NOTE: DevTools team maintains [Puppeteer](https://github.com/GoogleChrome/puppeteer) as a reliable high-level API to control browser. Internally, Puppeteer *does* use experimental CDP methods, but the team makes sure to update the library once the underlying protocol changes.
+
+Interactive Protocol viewers mark "experimental" bits, e.g. [vanilla protocol viewer](https://vanilla.aslushnikov.com/) aggressively highlights these bits with red background:
+
+![image](https://user-images.githubusercontent.com/746130/54233660-9ecf9e80-44ca-11e9-9049-1e80c1ccc0a3.png)
+
 
 ## Using Puppeteer's [CDPSession](https://pptr.dev/#?product=Puppeteer&version=v1.13.0&show=api-class-cdpsession)
 
@@ -221,7 +235,6 @@ const puppeteer = require('puppeteer');
 <!-- gen:stop -->
 
 It's easy to monitor all messages that Puppeteer exchanges with Chromium over CDP.
-Prefixing Puppeteer script with "DEBUG=*protocol" will output traffic to STDOUT:
 
 ```bash
 # Use DEBUG env variable to dump CDP traffic.
