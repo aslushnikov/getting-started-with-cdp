@@ -15,8 +15,7 @@ const puppeteer = require('puppeteer');
   await client.send('Animation.setPlaybackRate', {
     playbackRate: 2,
   });
-  // <...>
 
-  // Close brower.
-  await browser.close();
+  // Check out fast animations on the "loading..." screen.
+  await page.goto('https://pptr.dev');
 })();

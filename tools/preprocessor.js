@@ -38,7 +38,7 @@ module.exports.runCommands = function(sources, version) {
   for (const command of commands) {
     let newText = null;
     if (command.name === 'insertjs') {
-      newText = `\n[${command.args[0]}](${command.args[0]})`;
+      newText = `\nFile: [${command.args[0]}](${command.args[0]})`;
       const filePath = path.resolve(PROJECT_DIR, command.args[0]);
       newText += '\n```js\n' + fs.readFileSync(filePath, 'utf-8').trim() + '\n```\n';
     } else if (command.name === 'toc') {
