@@ -3,7 +3,7 @@ const puppeteer = require('puppeteer');
 const SEND = require('./SEND');
 
 (async () => {
-  // Launch a headful browser so that we can see page navigating.
+  // Launch a headful browser so that we can see the page navigating.
   const browser = await puppeteer.launch({headless: false});
 
   // Create a websocket to issue CDP commands.
@@ -17,7 +17,7 @@ const SEND = require('./SEND');
   });
   const pageTarget = targetsResponse.result.targetInfos.find(info => info.type === 'page');
 
-  // Attach to page target.
+  // Attach to the page target.
   const sessionId = (await SEND(ws, {
     id: 2,
     method: 'Target.attachToTarget',
@@ -27,10 +27,10 @@ const SEND = require('./SEND');
     },
   })).result.sessionId;
 
-  // Navigate page using session.
+  // Navigate the page using the session.
   await SEND(ws, {
     sessionId,
-    id: 1,
+    id: 1, // Note that IDs are independent between sessions.
     method: 'Page.navigate',
     params: {
       url: 'https://pptr.dev',

@@ -6,7 +6,7 @@ const puppeteer = require('puppeteer');
   const page = await browser.newPage();
 
   // Create a raw DevTools protocol session to talk to the page.
-  // Use CDP to set animation playback rate.
+  // Use CDP to set the animation playback rate.
   const client = await page.target().createCDPSession();
   await client.send('Animation.enable');
   client.on('Animation.animationCreated', () => {
@@ -16,6 +16,6 @@ const puppeteer = require('puppeteer');
     playbackRate: 2,
   });
 
-  // Check out fast animations on the "loading..." screen.
+  // Check it out! Fast animations on the "loading..." screen!
   await page.goto('https://pptr.dev');
 })();

@@ -2,9 +2,7 @@
 
 ## Intro
 
-> **NOTE**: Interactive protocol viewers are available at:
-> https://chromedevtools.github.io/devtools-protocol/ (official) and https://vanilla.aslushnikov.com (unofficial).
-
+> **NOTE**: An interactive protocol viewer is available at https://vanilla.aslushnikov.com.
 
 The Chrome DevTools Protocol allows for tools to instrument, inspect, debug and profile Chromium, Chrome and other Blink-based browsers. Many existing projects currently use the protocol. The Chrome DevTools uses this protocol and the team maintains its API.
 
@@ -19,15 +17,15 @@ npm i
 
 ## Protocol Fundamentals
 
-When Chromium is started with a `--remote-debugging-port=0` flag, it starts a Chrome DevTools protocol server and prints its WebSocket URL to STDOUT. The output looks something like this:
+When Chromium is started with a `--remote-debugging-port=0` flag, it starts a Chrome DevTools Protocol server and prints its WebSocket URL to STDOUT. The output looks something like this:
 
 ```bash
 DevTools listening on ws://127.0.0.1:36775/devtools/browser/a292f96c-7332-4ce8-82a9-7411f3bd280a
 ```
 
-Clients can create a WebSocket to connect to the URL and start sending CDP commands.  Chrome DevTools protocol is an extension of [JSONRPC](https://www.jsonrpc.org/specification): each comand is a javascript struct with an `id`, a `method`, and an optional `params`.
+Clients can create a WebSocket to connect to the URL and start sending CDP commands.  Chrome DevTools protocol is mostly based on [JSONRPC](https://www.jsonrpc.org/specification): each comand is a JavaScript struct with an `id`, a `method`, and an optional `params`.
 
-The following example launches Chromium with a remote debugging port enabled and attaches to it via WebSocket:
+The following example launches Chromium with a remote debugging port enabled and attaches to it via a WebSocket:
 
 <!-- gen:insertjs(./wsclient.js) -->
 File: [./wsclient.js](./wsclient.js)
@@ -48,6 +46,7 @@ const puppeteer = require('puppeteer');
 
   ws.on('message', msg => console.log(msg));
 
+  console.log('Sending Target.setDiscoverTargets');
   ws.send(JSON.stringify({
     id: 1,
     method: 'Target.setDiscoverTargets',
@@ -59,27 +58,28 @@ const puppeteer = require('puppeteer');
 ```
 <!-- gen:stop -->
 
-This script sends a [`Targets.setDiscoverTargets`](https://vanilla.aslushnikov.com/#Target.setDiscoverTargets) command over the DevTools protocol. In response, CDP will emit a [`Target.targetCreated`](https://vanilla.aslushnikov.com/#Target.targetCreated) event for every existing target and then return an empty response for the command:
+This script sends a [`Targets.setDiscoverTargets`](https://vanilla.aslushnikov.com/#Target.setDiscoverTargets) command over the DevTools protocol. The browser will first emit a [`Target.targetCreated`](https://vanilla.aslushnikov.com/#Target.targetCreated) event for every existing target and then respond to the command:
 
 ```bash
 connected!
+Sending Target.setDiscoverTargets
 {"method":"Target.targetCreated","params":{"targetInfo":{"targetId":"38555cfe-5ef3-44a5-a4e9-024ee6ebde5f","type":"browser","title":"","url":"","attached":true}}}
 {"method":"Target.targetCreated","params":{"targetInfo":{"targetId":"52CA0FEA80FB0B98BCDB759E535B21E4","type":"page","title":"","url":"about:blank","attached":false,"browserContextId":"339D5F1CCABEFE8545E15F3C2FA5F505"}}}
 {"id":1,"result":{}}
 ```
 
 A few things to notice:
-1. [Line 18](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/wsclient.js#L18): Every command that is sent over to CDP must have a unique “id” parameter. Message responses will be delivered over websocket and will have the same “id”.
-2. Incoming WebSocket messages without “id” parameter are protocol events.
-3. CDP heavily relies on messages order. In case of `Target.setDiscoverTargets`, it is (implicitly) guaranteed that all current targets will be reported before the response.
+1. [Line 19](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/wsclient.js#L19): Every command that is sent over to CDP must have a unique `'id'` parameter. Message responses will be delivered over websocket and will have the same `'id'`.
+2. Incoming WebSocket messages without `'id'` parameter are protocol events.
+3. Message order is important in CDP. In case of `Target.setDiscoverTargets`, it is (implicitly) guaranteed that all current targets will be reported before the response.
 4. There's a top-level "browser" target that always exists.
 
-Before advancing any further, consider a simple helper function to send DevTools protocol commands and wait for their responses (SEND.js):
+Before advancing any further, consider a simple helper function to send DevTools protocol commands and wait for their responses:
 
 <!-- gen:insertjs(./SEND.js) -->
 File: [./SEND.js](./SEND.js)
 ```js
-// Send a command over WebSocket and return a promise
+// Send a command over the WebSocket and return a promise
 // that resolves with the command response.
 module.exports = function SEND(ws, command) {
   ws.send(JSON.stringify(command));
@@ -102,7 +102,7 @@ Chrome DevTools protocol has APIs to interact with many different parts of the b
 
 When client wants to interact with a target using CDP, it has to first attach to the target using [Target.attachToTarget](https://vanilla.aslushnikov.com/#Target.attachToTarget) command. The command will establish a *protocol session* to the given target and return a *sessionId*.
 
-In order to submit a CDP command to the target, every message should also include the “sessionId” parameter next to the usual JSONRPC’s “id”.
+In order to submit a CDP command to the target, every message should also include a `sessionId` parameter next to the usual JSONRPC’s `'id'`.
 
 The following example uses CDP to attach to a page and navigate it to a web site:
 
@@ -114,7 +114,7 @@ const puppeteer = require('puppeteer');
 const SEND = require('./SEND');
 
 (async () => {
-  // Launch a headful browser so that we can see page navigating.
+  // Launch a headful browser so that we can see the page navigating.
   const browser = await puppeteer.launch({headless: false});
 
   // Create a websocket to issue CDP commands.
@@ -128,7 +128,7 @@ const SEND = require('./SEND');
   });
   const pageTarget = targetsResponse.result.targetInfos.find(info => info.type === 'page');
 
-  // Attach to page target.
+  // Attach to the page target.
   const sessionId = (await SEND(ws, {
     id: 2,
     method: 'Target.attachToTarget',
@@ -138,10 +138,10 @@ const SEND = require('./SEND');
     },
   })).result.sessionId;
 
-  // Navigate page using session.
+  // Navigate the page using the session.
   await SEND(ws, {
     sessionId,
-    id: 1,
+    id: 1, // Note that IDs are independent between sessions.
     method: 'Page.navigate',
     params: {
       url: 'https://pptr.dev',
@@ -152,61 +152,57 @@ const SEND = require('./SEND');
 <!-- gen:stop -->
 
 Things to notice:
-1. [Lines 22](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L22) and [33](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L33): clients must provide unique “id” for commands inside the session, but different sessions might have clashing ids.
-2. [Line 26](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L26): the `"flatten"` flag is a preffered mode of operation; non-flatten mode will be removed eventually. Flatten mode allows us to pass `sessionId` as a part of JSONRPC message (line 32).
-3. [Line 32](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L32): include a sessionId as a part of JSONRPC message to send a message to the page.
+1. [Lines 22](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L22) and [33](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L33): clients must provide unique `'id'` for commands inside the session, but different sessions might use the same ids.
+2. [Line 26](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L26): the `"flatten"` flag is the preffered mode of operation; the non-flattened mode will be removed eventually. Flattened mode allows us to pass `sessionId` as a part of the message (line 32).
+3. [Line 32](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L32): include the `sessionId` of the page as a part of the message to send it to the page.
 
-Sessions hold client state - such as pending evaluations, reported execution contexts e.t.c. Each session is initialized with a set of *domains*, the exact set of which depends on the attached target and can be [found somewhere in the Chromium source](https://cs.chromium.org/search/?q=%22session-%3EAddHandler%22+f:devtools&type=cs). For example, sessions connected to a browser don't have a "Page" domain, but pages do.
+Some commands set state which is stored per session, e.g. `Runtime.enable` and `Targets.setDiscoverTargets`. Each session is initialized with a set of *domains*, the exact set depends on the attached target and can be [found somewhere in the Chromium source](https://cs.chromium.org/search/?q=%22session-%3EAddHandler%22+f:devtools&type=cs). For example, sessions connected to a browser don't have a "Page" domain, but sessions connected to pages do.
 
-We call sessions attached to a Browser target as *browser sessions*. Similarly, there are *page sessions*, *worker sessions* and so on.
+We call sessions attached to a Browser target *browser sessions*. Similarly, there are *page sessions*, *worker sessions* and so on.
 
 ## Session Hierarchy
 
 When a client connects over the WebSocket to the launched Chromium browser ([sessions.js:10]((https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L22))), a *root* browser session is created.
 This session is the one that receives commands if there's no `sessionId` specified ([sessions.js:14](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L14-L17)). Later on, when the root browser session is used to attach to a page target ([sessions.js:21](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L21-L28)), a new page session created.
 
-> **NOTE**: page session is created from-inside browser session and thus is a **child** to browser session.
+The page session is created from inside the browser session and thus is a **child** of the browser session. When a parent session closes, e.g. via [`Target.detachFromTarget`](https://vanilla.aslushnikov.com/#Target.detachFromTarget), all of its child sessions are closed as well.
 
-This can go on: the page session can be used to create a worker session. **The parent-child relationship arranges all protocol sessions into multiple *trees* - each tree has a root in some root browser session.** When a parent session closes, all its child sessions are closed too.
 
 ## Target Hierarchy & Session Auto-Attaching
 
-As of March 2019, there's a hierarchy of targets in DevTools Protocol:
-- browser session Target domain manages top-level targets: Pages, Browser, ServiceWorkers, SharedWorkers
-- page session Target domain manages both Workers, ServiceWorkers and [OOPIFs](https://www.chromium.org/developers/design-documents/oop-iframes)
+As of March 2019, DevTools Protocol arranges targets in a hierarchy:
+- The Browser session's Target domain manages the top-level targets: Pages, Browser, ServiceWorkers, SharedWorkers
+- The Page/OOPIFs session's Target domain manages the subtargets: Workers, ServiceWorkers and [OOPIFs](https://www.chromium.org/developers/design-documents/oop-iframes)
+- The Worker session's Target domain manages the nested Workers.
 
-> **NOTE**: OOPIFs might have other OOPIFs inside, so the session tree depth is potentially unbound.
+Currently the only way to attach to the sub-targets of a page is by calling [`Target.setAutoAttach`](https://vanilla.aslushnikov.com/#Target.setAutoAttach). This will result in a sequence of [`Target.attachedToTarget`](https://vanilla.aslushnikov.com/#Target.attachedToTarget) events that report child `sessionId`s.
 
-The only way to attach to sub-targets inside a page is by calling [`Target.setAutoAttach`](https://vanilla.aslushnikov.com/#Target.setAutoAttach). This will result in a sequence of [`Target.attachedToTarget`](https://vanilla.aslushnikov.com/#Target.attachedToTarget) events that report child `sessionId`s.
-
-Auto-attaching to page's subtargets serves multiple purposes:
+Auto-attaching to the Page's subtargets serves multiple purposes:
 - That's the only way to discover DedicatedWorkers
 - That's the only way to discover OOPIFs
-- That's the only way to figure if SW relates to a page
+- That's the only way to figure out if a ServiceWorker relates to the Page
 
-> **NOTE**: There are plans to flatten targets, exposing Workers and OOPIFs on browser session target domain and introducing a designated api to describe ServiceWorker<->Page relationship.
+> **NOTE**: There are plans to flatten targets, exposing Workers and OOPIFs on the Browser session target domain and introducing a designated api to describe ServiceWorker<->Page relationship.
 
 ## Stable vs Experimental methods
 
-Chrome DevTools protocol has "stable" and "experimental" parts. Events, methods, and sometimes whole domains
-might be marked as "experimental". DevTools team doesn't commit to maintaining experimental APIs and is free to change/remove them at any moment.
+The Chrome DevTools Protocol has stable and experimental parts. Events, methods, and sometimes whole domains
+might be marked as experimental. DevTools team doesn't commit to maintaining experimental APIs and changes/removes them regularly. 
 
-**!!! USE EXPERIMENTAL APIs AT YOUR OWN RISK !!!**
+**!!! USE EXPERIMENTAL APIS AT YOUR OWN RISK !!!**
 
-As history has shown, experimental APIs *do* change quite often. If possible, stick to stable protocol or [Puppeteer](https://github.com/GoogleChrome/puppeteer).
+As history has shown, experimental APIs *do* change quite often. If possible, stick to the stable protocol or use [Puppeteer](https://github.com/GoogleChrome/puppeteer).
 
-> **NOTE**: DevTools team maintains [Puppeteer](https://github.com/GoogleChrome/puppeteer) as a reliable high-level API to control browser. Internally, Puppeteer *does* use experimental CDP methods, but the team makes sure to update the library once the underlying protocol changes.
+> **NOTE**: The Chrome DevTools team maintains [Puppeteer](https://github.com/GoogleChrome/puppeteer) as a reliable high-level API to control a browser. Internally, Puppeteer *does* use experimental CDP methods, but the team makes sure to update the library as the underlying protocol changes.
 
-Interactive Protocol viewers mark "experimental" bits, e.g. [vanilla protocol viewer](https://vanilla.aslushnikov.com/) aggressively highlights these bits with red background:
+[Vanilla protocol viewer](https://vanilla.aslushnikov.com/) aggressively highlights experimental bits with red background:
 
 ![image](https://user-images.githubusercontent.com/746130/54233660-9ecf9e80-44ca-11e9-9049-1e80c1ccc0a3.png)
 
 
 ## Using Puppeteer's [CDPSession](https://pptr.dev/#?product=Puppeteer&version=v1.13.0&show=api-class-cdpsession)
 
-CDP allows creating multiple sessions to the same target. This makes it very convenient to use Puppeteer
-to experiment with a raw protocol.
-
+It is very convenient to use Puppeteer to experiment with the raw protocol.
 The following example creates a raw protocol session to the page to speed up animations.
 
 <!-- gen:insertjs(./cdpsession.js) -->
@@ -220,7 +216,7 @@ const puppeteer = require('puppeteer');
   const page = await browser.newPage();
 
   // Create a raw DevTools protocol session to talk to the page.
-  // Use CDP to set animation playback rate.
+  // Use CDP to set the animation playback rate.
   const client = await page.target().createCDPSession();
   await client.send('Animation.enable');
   client.on('Animation.animationCreated', () => {
@@ -230,15 +226,17 @@ const puppeteer = require('puppeteer');
     playbackRate: 2,
   });
 
-  // Check out fast animations on the "loading..." screen.
+  // Check it out! Fast animations on the "loading..." screen!
   await page.goto('https://pptr.dev');
 })();
 ```
 <!-- gen:stop -->
 
-It's easy to monitor all messages that Puppeteer exchanges with Chromium over CDP.
+It's easy to monitor all CDP messages that Puppeteer exchanges with Chromium.
 
 ```bash
 # Use DEBUG env variable to dump CDP traffic.
 $ DEBUG=*protocol node simple.js
 ```
+
+You can also monitor CDP messages from DevTools: [Chrome DevTools Protocol Monitor](https://umaar.com/dev-tips/166-protocol-monitor/).

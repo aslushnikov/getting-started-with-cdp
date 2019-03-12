@@ -1,4 +1,4 @@
-// Send a command over WebSocket and return a promise
+// Send a command over the WebSocket and return a promise
 // that resolves with the command response.
 module.exports = function SEND(ws, command) {
   ws.send(JSON.stringify(command));

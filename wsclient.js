@@ -14,6 +14,7 @@ const puppeteer = require('puppeteer');
 
   ws.on('message', msg => console.log(msg));
 
+  console.log('Sending Target.setDiscoverTargets');
   ws.send(JSON.stringify({
     id: 1,
     method: 'Target.setDiscoverTargets',
