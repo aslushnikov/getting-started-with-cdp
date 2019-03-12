@@ -1,8 +1,14 @@
 # Using Chrome DevTools Protocol
 
-These are the sources for the [Using Chrome DevTools Protocol](https://docs.google.com/document/d/1pf5ncvq9-cmvT1lGLqzK0Vp4bkQUsU8FwsHYJMQenqg/edit?usp=sharing).
+## Intro
 
-To run scripts locally, close this repository and install its
+> **NOTE**: Interactive protocol viewers are available at:
+> https://chromedevtools.github.io/devtools-protocol/ (official) and https://vanilla.aslushnikov.com (unofficial).
+
+
+The Chrome DevTools Protocol allows for tools to instrument, inspect, debug and profile Chromium, Chrome and other Blink-based browsers. Many existing projects currently use the protocol. The Chrome DevTools uses this protocol and the team maintains its API.
+
+To run scripts locally, clone this repository and make sure to install
 dependencies:
 
 ```bash
@@ -63,7 +69,7 @@ connected!
 ```
 
 A few things to notice:
-1. Every command that is sent over to CDP must have a unique “id” parameter. Message responses will be delivered over websocket and will have the same “id”.
+1. [Line 18](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/wsclient.js#L18): Every command that is sent over to CDP must have a unique “id” parameter. Message responses will be delivered over websocket and will have the same “id”.
 2. Incoming WebSocket messages without “id” parameter are protocol events.
 3. CDP heavily relies on messages order. In case of `Target.setDiscoverTargets`, it is (implicitly) guaranteed that all current targets will be reported before the response.
 
