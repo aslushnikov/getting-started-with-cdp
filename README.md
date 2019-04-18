@@ -4,6 +4,8 @@
 
 > Not convinced? At least use [Puppeteer's CDPSession](https://github.com/aslushnikov/getting-started-with-cdp#using-puppeteers-cdpsession).
 
+> See also [Contributing to Chrome DevTools Protocol](https://docs.google.com/document/d/1c-COD2kaK__5iMM5SEx-PzNA7HFmgttcYfOHHX0HaOM/edit#heading=h.e6mz7k1mw34a)
+
 
 ## Intro
 
