@@ -103,7 +103,7 @@ module.exports = function SEND(ws, command) {
 ```
 <!-- gen:stop -->
 
-> **NOTE**: this `SEND` implementation is very inefficient - don't use it as-is! Check out Puppeteer's [Connection.js](https://github.com/GoogleChrome/puppeteer/blob/master/lib/Connection.js) for a
+> **NOTE**: this `SEND` implementation is very inefficient - don't use it as-is! Check out Puppeteer's [Connection.js](https://github.com/puppeteer/puppeteer/blob/master/src/Connection.js) for a
 > better version.
 
 ## Targets & Sessions
