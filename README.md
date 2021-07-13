@@ -1,6 +1,6 @@
 # Using Chrome DevTools Protocol
 
-> **Think twice before using CDP directly. You'll be better off with [Puppeteer](https://github.com/GoogleChrome/puppeteer)**
+> **Think twice before using CDP directly. You'll be better off with [Playwright](https://github.com/microsoft/playwright)**
 
 > Not convinced? At least use [Puppeteer's CDPSession](https://github.com/aslushnikov/getting-started-with-cdp#using-puppeteers-cdpsession).
 
