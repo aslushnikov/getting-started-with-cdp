@@ -30,7 +30,7 @@ When Chromium is started with a `--remote-debugging-port=0` flag, it starts a Ch
 DevTools listening on ws://127.0.0.1:36775/devtools/browser/a292f96c-7332-4ce8-82a9-7411f3bd280a
 ```
 
-Clients can create a WebSocket to connect to the URL and start sending CDP commands.  Chrome DevTools protocol is mostly based on [JSONRPC](https://www.jsonrpc.org/specification): each comand is a JavaScript struct with an `id`, a `method`, and an optional `params`.
+Clients can create a WebSocket to connect to the URL and start sending CDP commands.  Chrome DevTools protocol is mostly based on [JSONRPC](https://www.jsonrpc.org/specification): each command is a JavaScript struct with an `id`, a `method`, and an optional `params`.
 
 The following example launches Chromium with a remote debugging port enabled and attaches to it via a WebSocket:
 
@@ -163,7 +163,7 @@ const SEND = require('./SEND');
 
 Things to notice:
 1. [Lines 22](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L22) and [33](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L33): clients must provide unique `'id'` for commands inside the session, but different sessions might use the same ids.
-2. [Line 26](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L26): the `"flatten"` flag is the preffered mode of operation; the non-flattened mode will be removed eventually. Flattened mode allows us to pass `sessionId` as a part of the message (line 32).
+2. [Line 26](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L26): the `"flatten"` flag is the preferred mode of operation; the non-flattened mode will be removed eventually. Flattened mode allows us to pass `sessionId` as a part of the message (line 32).
 3. [Line 32](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L32): include the `sessionId` of the page as a part of the message to send it to the page.
 
 Some commands set state which is stored per session, e.g. `Runtime.enable` and `Targets.setDiscoverTargets`. Each session is initialized with a set of *domains*, the exact set depends on the attached target and can be [found somewhere in the Chromium source](https://cs.chromium.org/search/?q=%22session-%3EAddHandler%22+f:devtools&type=cs). For example, sessions connected to a browser don't have a "Page" domain, but sessions connected to pages do.
