@@ -30,6 +30,8 @@ When Chromium is started with a `--remote-debugging-port=0` flag, it starts a Ch
 DevTools listening on ws://127.0.0.1:36775/devtools/browser/a292f96c-7332-4ce8-82a9-7411f3bd280a
 ```
 
+> If you don't get any output, make sure to add `--enable-logging` to see the WebSocket URL.
+
 Clients can create a WebSocket to connect to the URL and start sending CDP commands.  Chrome DevTools protocol is mostly based on [JSONRPC](https://www.jsonrpc.org/specification): each comand is a JavaScript struct with an `id`, a `method`, and an optional `params`.
 
 The following example launches Chromium with a remote debugging port enabled and attaches to it via a WebSocket:
