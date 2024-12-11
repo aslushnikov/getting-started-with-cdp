@@ -105,7 +105,7 @@ module.exports = function SEND(ws, command) {
 ```
 <!-- gen:stop -->
 
-> **NOTE**: this `SEND` implementation is very inefficient - don't use it as-is! Check out Puppeteer's [Connection.js](https://github.com/GoogleChrome/puppeteer/blob/master/lib/Connection.js) for a
+> **NOTE**: this `SEND` implementation is very inefficient - don't use it as-is! Check out Puppeteer's [Connection.ts](https://github.com/puppeteer/puppeteer/blob/main/packages/puppeteer-core/src/cdp/Connection.ts) for a
 > better version.
 
 ## Targets & Sessions
@@ -187,9 +187,9 @@ might be marked as experimental. DevTools team doesn't commit to maintaining exp
 
 **!!! USE EXPERIMENTAL APIS AT YOUR OWN RISK !!!**
 
-As history has shown, experimental APIs *do* change quite often. If possible, stick to the stable protocol or use [Puppeteer](https://github.com/GoogleChrome/puppeteer).
+As history has shown, experimental APIs *do* change quite often. If possible, stick to the stable protocol or use [Puppeteer](https://github.com/puppeteer/puppeteer).
 
-> **NOTE**: The Chrome DevTools team maintains [Puppeteer](https://github.com/GoogleChrome/puppeteer) as a reliable high-level API to control a browser. Internally, Puppeteer *does* use experimental CDP methods, but the team makes sure to update the library as the underlying protocol changes.
+> **NOTE**: The Chrome DevTools team maintains [Puppeteer](https://github.com/puppeteer/puppeteer) as a reliable high-level API to control a browser. Internally, Puppeteer *does* use experimental CDP methods, but the team makes sure to update the library as the underlying protocol changes.
 
 [Vanilla protocol viewer](https://vanilla.aslushnikov.com/) aggressively highlights experimental bits with red background.
 
