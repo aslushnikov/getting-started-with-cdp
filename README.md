@@ -168,7 +168,7 @@ Things to notice:
 2. [Line 26](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L26): the `"flatten"` flag is the preffered mode of operation; the non-flattened mode will be removed eventually. Flattened mode allows us to pass `sessionId` as a part of the message (line 32).
 3. [Line 32](https://github.com/aslushnikov/getting-started-with-cdp/blob/master/sessions.js#L32): include the `sessionId` of the page as a part of the message to send it to the page.
 
-Some commands set state which is stored per session, e.g. `Runtime.enable` and `Targets.setDiscoverTargets`. Each session is initialized with a set of *domains*, the exact set depends on the attached target and can be [found somewhere in the Chromium source](https://cs.chromium.org/search/?q=%22session-%3EAddHandler%22+f:devtools&type=cs). For example, sessions connected to a browser don't have a "Page" domain, but sessions connected to pages do.
+Some commands set state which is stored per session, e.g. `Runtime.enable` and `Targets.setDiscoverTargets`. Each session is initialized with a set of *domains*, the exact set depends on the attached target and can be [found somewhere in the Chromium source](https://source.chromium.org/search?q=%22session-%3ECreateAndAddHandler%22%20f:devtools&ss=chromium). For example, sessions connected to a browser don't have a "Page" domain, but sessions connected to pages do.
 
 We call sessions attached to a Browser target *browser sessions*. Similarly, there are *page sessions*, *worker sessions* and so on. In fact, the WebSocket connection is an implicitly created browser session.
 
